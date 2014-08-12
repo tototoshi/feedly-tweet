@@ -50,16 +50,24 @@ def shorten_url(long_url):
     return data['url']
 
 def create_tweet_text(title, entry_title, url):
-    text = title + "/" + entry_title + " " + url
-    if len(text) > 140:
+    TEXT_LIMIT = 116 # 23 chars are reserved for url
+    LIMIT = 140
+
+    def join_text_and_url(text, url):
+        return text + " " + url
+
+    text = title + "/" + entry_title
+
+    # first, shorten url
+    if len(join_text_and_url(text, url)) > LIMIT:
         url = shorten_url(url)
-        text = title + "/" + entry_title + " " + url
-    if len(text) > 140:
-        over = len(text) - 140
-        entry_title = entry_title[0:-1 * over - 1] + "…"
-        print(entry_title)
-        text = title + "/" + entry_title + " " + url
-    return text
+
+    # shorten text if still over limit
+    if len(join_text_and_url(text, url)) > LIMIT:
+        over = len(text) - TEXT_LIMIT
+        text = text[0:-1 * over - 1] + "…"
+
+    return join_text_and_url(text, url)
 
 def mark_an_entry_as_read(entry_id):
     headers = get_feedly_auth_header()
