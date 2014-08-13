@@ -34,7 +34,7 @@ def get_unread_entry(feed_id, continuation=None):
         payload['continuation'] = continuation
     r = requests.get("https://cloud.feedly.com/v3/streams/contents", params=payload, headers=headers)
     json = r.json()
-    title = json['title']
+    title = json.get('title')
     entries = [entry for entry in json['items'] if entry['unread']]
     if 'continuation' in json:
         continuation = json['continuation']
@@ -56,7 +56,10 @@ def create_tweet_text(title, entry_title, url):
     def join_text_and_url(text, url):
         return text + " " + url
 
-    text = title + "/" + entry_title
+    if title:
+        text = title + "/" + entry_title
+    else:
+        text = entry_title
 
     # first, shorten url
     if len(join_text_and_url(text, url)) > LIMIT:
