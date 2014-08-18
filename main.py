@@ -13,9 +13,27 @@ def get_feedly_access_token():
     f.close()
     return token.strip()
 
+def save_feedly_access_token(token):
+    f = open(FEEDLY_ACCESS_TOKEN_FILE, 'w')
+    f.write(token)
+    f.close()
+
 def get_feedly_auth_header():
     token = get_feedly_access_token()
     return {"Authorization": "Bearer " + token}
+
+def refresh_feedly_token(refresh_token):
+    headers = get_feedly_auth_header()
+    payload = {
+        "refresh_token": refresh_token,
+        "client_id": os.getenv("FEEDLY_CLIENT_ID"),
+        "client_secret": os.getenv("FEEDLY_CLIENT_SECRET"),
+        "grant_type": "refresh_token"
+    }
+    r = requests.post("https://cloud.feedly.com/v3/auth/token", data=json.dumps(payload), headers=headers)
+    response = r.json()
+    new_token = response['access_token']    
+    return new_token
 
 def get_unreads():
     headers = get_feedly_auth_header()
@@ -114,3 +132,7 @@ if __name__ == "__main__":
             mark_an_entry_as_read(entry_id)
             print(text)
             tweet(text)
+
+    access_token = get_feedly_access_token()
+    new_access_token = refresh_feedly_token(os.getenv("FEEDLY_REFRESH_TOKEN"))
+    save_feedly_access_token(new_access_token)
