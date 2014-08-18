@@ -5,8 +5,17 @@ from twitter import *
 import json
 import os
 
+FEEDLY_ACCESS_TOKEN_FILE = '.feedly_access_token'
+
+def get_feedly_access_token():
+    f = open(FEEDLY_ACCESS_TOKEN_FILE, 'r')
+    token = f.read()
+    f.close()
+    return token.strip()
+
 def get_feedly_auth_header():
-    return {"Authorization": "Bearer " + os.getenv("FEEDLY_ACCESS_TOKEN")}
+    token = get_feedly_access_token()
+    return {"Authorization": "Bearer " + token}
 
 def get_unreads():
     headers = get_feedly_auth_header()
