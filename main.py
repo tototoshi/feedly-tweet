@@ -7,6 +7,9 @@ import os
 
 FEEDLY_ACCESS_TOKEN_FILE = '.feedly_access_token'
 
+class BitlyError(Exception):
+    pass
+
 def get_feedly_access_token():
     f = open(FEEDLY_ACCESS_TOKEN_FILE, 'r')
     token = f.read()
@@ -73,6 +76,8 @@ def shorten_url(long_url):
     params = {"access_token": os.getenv("BITLY_ACCESS_TOKEN"), "longUrl": long_url}
     r = requests.get("https://api-ssl.bitly.com/v3/shorten", params=params)
     json = r.json()
+    if json['status_code'] != 200:
+        raise BitlyError(r.text)
     data = json['data']
     return data['url']
 
@@ -125,13 +130,16 @@ if __name__ == "__main__":
     for unread in unreads:
         title, entries = get_unread_entries(unread['id'])
         for entry in entries:
-            entry_id = entry['id']
-            url = entry['alternate'][0]['href']
-            entry_title = entry['title']
-            text = create_tweet_text(title, entry_title, url)
-            mark_an_entry_as_read(entry_id)
-            print(text)
-            tweet(text)
+            try:
+                entry_id = entry['id']
+                url = entry['alternate'][0]['href']
+                entry_title = entry['title']
+                text = create_tweet_text(title, entry_title, url)
+                mark_an_entry_as_read(entry_id)
+                print(text)
+                tweet(text)
+            except BitlyError as e:
+                print(e.message)
 
     access_token = get_feedly_access_token()
     new_access_token = refresh_feedly_token(os.getenv("FEEDLY_REFRESH_TOKEN"))
