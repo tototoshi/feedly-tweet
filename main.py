@@ -4,8 +4,13 @@ import requests
 from twitter import *
 import json
 import os
+import logging
 
 FEEDLY_ACCESS_TOKEN_FILE = '.feedly_access_token'
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S')
 
 class BitlyError(Exception):
     pass
@@ -136,10 +141,10 @@ if __name__ == "__main__":
                 entry_title = entry['title']
                 text = create_tweet_text(title, entry_title, url)
                 mark_an_entry_as_read(entry_id)
-                print(text)
+                logging.info(text)
                 tweet(text)
             except BitlyError as e:
-                print(e.message)
+                logging.error(e.message)
 
     access_token = get_feedly_access_token()
     new_access_token = refresh_feedly_token(os.getenv("FEEDLY_REFRESH_TOKEN"))
