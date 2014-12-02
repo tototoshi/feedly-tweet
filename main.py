@@ -138,7 +138,7 @@ if __name__ == "__main__":
             try:
                 entry_id = entry['id']
                 url = entry['alternate'][0]['href']
-                entry_title = entry['title']
+                entry_title = entry.get('title', '')
                 text = create_tweet_text(title, entry_title, url)
                 mark_an_entry_as_read(entry_id)
                 logging.info(text)
